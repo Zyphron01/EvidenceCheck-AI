@@ -242,6 +242,7 @@ export function InteractiveEvidenceTrail({ report }: EvidenceTrailProps) {
                   return (
                     <div
                       key={src.id}
+                      data-testid={`trail-node-${src.id}`}
                       onClick={() => setSelectedNode({ type: "SOURCE", id: src.id })}
                       onMouseEnter={() => setHoveredNodeId(src.id)}
                       onMouseLeave={() => setHoveredNodeId(null)}
@@ -283,6 +284,7 @@ export function InteractiveEvidenceTrail({ report }: EvidenceTrailProps) {
                   return (
                     <div
                       key={psg.id}
+                      data-testid={`trail-node-${psg.id}`}
                       onClick={() => setSelectedNode({ type: "PASSAGE", id: psg.id })}
                       onMouseEnter={() => setHoveredNodeId(psg.id)}
                       onMouseLeave={() => setHoveredNodeId(null)}
@@ -337,6 +339,7 @@ export function InteractiveEvidenceTrail({ report }: EvidenceTrailProps) {
                   return (
                     <div
                       key={cit.id}
+                      data-testid={`trail-node-${cit.id}`}
                       onClick={() => setSelectedNode({ type: "CITATION", id: cit.id })}
                       onMouseEnter={() => setHoveredNodeId(cit.id)}
                       onMouseLeave={() => setHoveredNodeId(null)}

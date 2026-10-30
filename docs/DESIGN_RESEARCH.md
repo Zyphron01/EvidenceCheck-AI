@@ -57,3 +57,4 @@ During the design discovery phase, 6 leading interactive and design benchmark we
 2. **Constellation Canvas**: Procedurally generated constellation nodes floating in subtle parallax space behind the editorial hero.
 3. **The Signature Evidence Trail**: An interactive evidence constellation graph where authentic sources, passages, and audited citations form visible luminous trajectories culminating in the verdict.
 4. **Editorial Precision**: Crisp monospaced coordinates, verified badge pills, and expandable verbatim quote audit drawers.
+

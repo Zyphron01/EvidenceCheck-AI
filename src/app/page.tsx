@@ -58,24 +58,15 @@ export default function HomePage() {
     setClientError(null);
     setApiError(null);
     try {
-      const res = await fetch("/api/reports");
-      if (res.ok) {
-        const json = await res.json();
-        const archiveItem = json?.data?.reports?.find(
-          (r: { source: string }) => r.source === "verified_live_archive"
-        );
-        if (archiveItem) {
-          const reportRes = await fetch(`/api/reports/${archiveItem.id}`);
-          if (reportRes.ok) {
-            const reportJson = await reportRes.json();
-            if (reportJson.success && reportJson.data?.report) {
-              setCurrentReport(reportJson.data.report);
-              setIsArchiveReport(true);
-              setActiveTab("archive");
-              setIsLoading(false);
-              return;
-            }
-          }
+      const reportRes = await fetch("/api/reports/rep-9aa0e699-d2c5-46b6-8464-023e148b9c0b");
+      if (reportRes.ok) {
+        const reportJson = await reportRes.json();
+        if (reportJson.success && reportJson.data?.report) {
+          setCurrentReport(reportJson.data.report);
+          setIsArchiveReport(true);
+          setActiveTab("archive");
+          setIsLoading(false);
+          return;
         }
       }
       setClientError("Verified archive report could not be loaded from database/disk.");
@@ -281,6 +272,7 @@ export default function HomePage() {
 
                     <button
                       type="button"
+                      data-testid="inspect-archive-btn"
                       onClick={handleLoadArchive}
                       className="inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-[#192739] hover:bg-[#22354e] text-[#23C9C5] text-xs font-semibold rounded-xl border border-[#23C9C5]/30 transition-all"
                     >
@@ -304,6 +296,7 @@ export default function HomePage() {
                       <button
                         key={example}
                         type="button"
+                        data-testid="example-pill"
                         onClick={() => handleExampleSelect(example)}
                         className="text-xs text-zinc-300 hover:text-white bg-[#111B2A]/80 hover:bg-[#192739] border border-zinc-800/80 hover:border-[#23C9C5]/50 rounded-xl px-3.5 py-2 text-left transition-all shadow-sm"
                       >

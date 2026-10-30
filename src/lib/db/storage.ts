@@ -73,7 +73,7 @@ interface PgPoolInstance {
 }
 
 interface PgModule {
-  Pool: new (config: { connectionString?: string }) => PgPoolInstance;
+  Pool: new (config: { connectionString?: string; connectionTimeoutMillis?: number }) => PgPoolInstance;
 }
 
 async function loadPgDriver(): Promise<PgModule | null> {
@@ -105,7 +105,10 @@ export async function saveReport(report: EvidenceReport): Promise<{ saved: boole
       };
     }
 
-    const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+    const pool = new pg.Pool({
+      connectionString: process.env.DATABASE_URL,
+      connectionTimeoutMillis: 3000,
+    });
 
     try {
       await pool.query(
@@ -157,13 +160,28 @@ export async function getReportById(id: string): Promise<{
   source: "postgres" | "verified_live_archive" | null;
   error?: string;
 }> {
+  // If requesting the verified live archive report, return immediately from compiled bundle
+  const archivedReport = getSavedLiveArchiveReport();
+  if (
+    archivedReport &&
+    (archivedReport.id === id ||
+      id === "archive" ||
+      id === "verified-archive" ||
+      id === "rep-phase2-speed-of-light-live")
+  ) {
+    return { report: archivedReport, source: "verified_live_archive" };
+  }
+
   const dbStatus = getDatabaseStatus();
 
   if (dbStatus.configured) {
     try {
       const pg = await loadPgDriver();
       if (pg) {
-        const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+        const pool = new pg.Pool({
+          connectionString: process.env.DATABASE_URL,
+          connectionTimeoutMillis: 2500,
+        });
         try {
           const res = await pool.query(`SELECT raw_report FROM reports WHERE id = $1 LIMIT 1`, [id]);
           if (res.rows.length > 0) {
@@ -186,12 +204,6 @@ export async function getReportById(id: string): Promise<{
     }
   }
 
-  // Fallback to verified live run archive if ID matches
-  const archivedReport = getSavedLiveArchiveReport();
-  if (archivedReport && archivedReport.id === id) {
-    return { report: archivedReport, source: "verified_live_archive" };
-  }
-
   return { report: null, source: null };
 }
 
@@ -210,7 +222,10 @@ export async function listRecentReports(limit = 10): Promise<{
     try {
       const pg = await loadPgDriver();
       if (pg) {
-        const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+        const pool = new pg.Pool({
+          connectionString: process.env.DATABASE_URL,
+          connectionTimeoutMillis: 2500,
+        });
         try {
           const res = await pool.query(
             `SELECT id, claim_text, verdict_status, confidence, created_at
@@ -286,7 +301,10 @@ export async function reserveDurableSearchBudget(
       };
     }
 
-    const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+    const pool = new pg.Pool({
+      connectionString: process.env.DATABASE_URL,
+      connectionTimeoutMillis: 3000,
+    });
     try {
       // Ensure budget table exists
       await pool.query(`

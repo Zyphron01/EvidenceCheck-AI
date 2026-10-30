@@ -164,8 +164,10 @@ export function ConstellationCanvas() {
   return (
     <canvas
       ref={canvasRef}
+      style={{ pointerEvents: "none" }}
       className="pointer-events-none fixed inset-0 z-0 opacity-40 transition-opacity duration-1000"
       aria-hidden="true"
     />
   );
 }
+
