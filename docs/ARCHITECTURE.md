@@ -29,11 +29,14 @@ In strict compliance with architectural constraints, only files containing worki
 | `src/app/api/investigate/route.ts` | API Route | Next.js App Router route handler (`POST`), configured with `maxDuration = 60` for serverless function duration safety. | **Verified** |
 | `src/app/api/reports/route.ts` | API Route | Next.js App Router route handler (`GET`) for listing stored and archived reports. | **Verified** |
 | `src/app/api/reports/[id]/route.ts` | API Route | Next.js App Router route handler (`GET`) for retrieving report by ID. | **Verified** |
+| `src/components/ConstellationCanvas.tsx` | Visual Canvas | High-performance 2.5D procedural constellation canvas with 3D projection, cursor parallax, and strict reduced-motion compliance. | **Verified** |
+| `src/components/InteractiveEvidenceTrail.tsx` | Evidence Trail | Flagship interactive evidence graph connecting Claim → Sources → Passages → Citations → Verdict with dynamic focus and verbatim quote proof inspection. | **Verified** |
 | `src/components/EvidenceCheckHeader.tsx` | Header Component | Top branding, system model/retriever specs, and tab switcher (`Investigate`, `Verified Run`, `Dashboard`). | **Verified** |
 | `src/components/InvestigationProgress.tsx` | Progress Component | Transparent progress viewer displaying live elapsed seconds and real pipeline phases without fabricated completion states. | **Verified** |
 | `src/components/EvidenceReportView.tsx` | Report Component | Premium report view displaying original claim, verdict status, heuristic support index disclosures, citation audit panel with `SEARCH_SNIPPET` scope, authentic source cards, and atomic passage explorer. | **Verified** |
 | `src/components/DashboardView.tsx` | Dashboard Component | Dashboard listing actual stored reports, verified live archive link, and honest setup blocker alert when `DATABASE_URL` is absent. | **Verified** |
 | `src/app/page.tsx` | Web Platform | Main judge-ready web application integrating claim submission, live progress handling, report viewing, and dashboard navigation. | **Verified** |
+| `docs/DESIGN_RESEARCH.md` | Design Research | Analysis of inspected benchmark sites (Linear, Spline, Bruno Simon, Awwwards, Motion, Codrops) and Evidence Constellation design language. | **Active** |
 | `docs/DEPLOYMENT.md` | Deployment Guide | Serverless execution budget plan, required environment variables, Upstash rate limiting, and PostgreSQL schema. | **Active** |
 | `tests/runtime.test.mjs` | Test Suite | 16 runtime tests covering input validation, rate limiting, concurrency locks, configuration checks, and budget guards. | **Verified** (16/16 pass) |
 | `tests/phase2.test.mjs` | Test Suite | 41 deterministic tests covering query planning, URL deduplication, passage slicing, analyzer parsing, quote matching, verdict logic, request serialization, and error diagnostics. | **Verified** (41/41 pass) |

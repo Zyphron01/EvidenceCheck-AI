@@ -1,14 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #09090b;
-  --foreground: #f4f4f5;
-  --card: #121215;
-  --card-border: #27272a;
-  --accent-blue: #3b82f6;
-  --accent-emerald: #10b981;
-  --accent-rose: #f43f5e;
-  --accent-amber: #f59e0b;
+  --background: #080D16;
+  --foreground: #EAF2F7;
+  --surface: #111B2A;
+  --surface-elevated: #192739;
+  --border-subtle: rgba(35, 201, 197, 0.12);
+  --border-card: rgba(255, 255, 255, 0.08);
+  --accent-cyan: #23C9C5;
+  --accent-cyan-glow: rgba(35, 201, 197, 0.25);
+  --accent-emerald: #10B981;
+  --accent-rose: #F43F5E;
+  --accent-amber: #F59E0B;
 }
 
 body {
@@ -16,20 +19,65 @@ body {
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color-scheme: dark;
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(35, 201, 197, 0.07), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 80%, rgba(16, 185, 129, 0.03), transparent);
+  background-attachment: fixed;
+  overflow-x: hidden;
 }
 
-/* Custom scrollbar for raw inspect panels */
+/* Glassmorphism surfaces */
+.glass-surface {
+  background: rgba(17, 27, 42, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.glass-surface-elevated {
+  background: rgba(25, 39, 57, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(35, 201, 197, 0.18);
+}
+
+.cyan-glow {
+  box-shadow: 0 0 25px rgba(35, 201, 197, 0.15);
+}
+
+.cyan-glow-hover:hover {
+  box-shadow: 0 0 35px rgba(35, 201, 197, 0.25);
+}
+
+/* Subtle grid backdrop */
+.constellation-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #121215;
+  background: #080D16;
 }
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #192739;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #23C9C5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

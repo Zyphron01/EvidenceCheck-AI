@@ -1,18 +1,21 @@
 "use client";
 
-import { FormEvent, useRef, useState, useEffect } from "react";
+import React, { FormEvent, useRef, useState, useEffect } from "react";
 import type { InvestigateApiResponse } from "@/types/investigation";
 import type { EvidenceReport } from "@/lib/schemas/report";
 import { EvidenceCheckHeader, type ActiveTab } from "@/components/EvidenceCheckHeader";
 import { InvestigationProgress } from "@/components/InvestigationProgress";
 import { EvidenceReportView } from "@/components/EvidenceReportView";
 import { DashboardView } from "@/components/DashboardView";
+import { ConstellationCanvas } from "@/components/ConstellationCanvas";
 import {
   Search,
   AlertTriangle,
   CheckCircle2,
   Sparkles,
   Info,
+  ShieldCheck,
+  Cpu,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -27,7 +30,7 @@ export default function HomePage() {
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Check database status on mount (server-side check via lightweight endpoint)
+  // Check database configuration status on mount
   useEffect(() => {
     async function checkDb() {
       try {
@@ -39,7 +42,7 @@ export default function HomePage() {
           }
         }
       } catch {
-        // Ignore network check errors
+        // Fallback
       }
     }
     checkDb();
@@ -75,7 +78,7 @@ export default function HomePage() {
           }
         }
       }
-      setClientError("Verified archive report could not be loaded from disk.");
+      setClientError("Verified archive report could not be loaded from database/disk.");
     } catch (err: unknown) {
       setClientError(err instanceof Error ? err.message : "Failed to load archive.");
     } finally {
@@ -108,8 +111,8 @@ export default function HomePage() {
     }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: FormEvent) => {
+    if (e) e.preventDefault();
 
     const trimmedClaim = claim.trim();
     if (!trimmedClaim) {
@@ -182,8 +185,18 @@ export default function HomePage() {
     setIsLoading(false);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-200">
+    <div className="min-h-screen bg-[#080D16] text-[#EAF2F7] flex flex-col font-sans selection:bg-[#23C9C5]/30 selection:text-white relative">
+      {/* Dynamic 2.5D Constellation Background */}
+      <ConstellationCanvas />
+
       <EvidenceCheckHeader
         activeTab={activeTab}
         onTabChange={(tab) => {
@@ -195,59 +208,72 @@ export default function HomePage() {
         databaseConfigured={databaseConfigured}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-14 relative z-10">
         {/* TAB 1: INVESTIGATE (HOME & INPUT VIEW) */}
         {activeTab === "investigate" && (
-          <div className="space-y-10">
-            {/* Input Hero Section (hidden if a report is already active and not loading) */}
+          <div className="space-y-12">
+            {/* Input Hero Section */}
             {!currentReport && !isLoading && (
-              <div className="max-w-3xl mx-auto space-y-8 text-center sm:text-left">
-                <div className="space-y-3 text-center">
-                  <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+              <div className="max-w-4xl mx-auto space-y-10 text-center sm:text-left">
+                {/* Hero Editorial Header */}
+                <div className="space-y-4 text-center">
+                  <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#111B2A] border border-[rgba(35,201,197,0.3)] text-[#23C9C5] text-xs font-semibold shadow-lg shadow-[#23C9C5]/5 backdrop-blur-md">
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Locked Innovation: Bidirectional Retrieval & Deterministic Quotation Audit</span>
+                    <span>Evidence Constellation • Citation-Audited Verification Engine</span>
                   </div>
-                  <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-zinc-100">
-                    Audit Factual Claims with Verifiable Evidence
+
+                  <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-zinc-100 leading-[1.1] max-w-3xl mx-auto">
+                    Audit Factual Claims with{" "}
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#23C9C5] via-teal-300 to-emerald-400">
+                      Verifiable Proof
+                    </span>
                   </h1>
-                  <p className="text-sm sm:text-base text-zinc-400 max-w-2xl mx-auto">
-                    EvidenceCheck AI retrieves opposing and supporting evidence via Tavily, analyzes contradictions with Nemotron 120B, and verifies exact citations against source snippets.
+
+                  <p className="text-sm sm:text-base text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+                    EvidenceCheck AI coordinates bidirectional web retrieval via Tavily, extracts atomic passages, reasons over contradictions with Nemotron 120B, and deterministically validates quotations against retrieved text.
                   </p>
                 </div>
 
-                {/* Claim Input Form */}
+                {/* Interactive Claim Input Capsule */}
                 <form
                   onSubmit={handleSubmit}
-                  className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4 text-left"
+                  className="bg-[#111B2A]/90 border border-[rgba(35,201,197,0.2)] rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4 text-left backdrop-blur-xl relative overflow-hidden"
                 >
-                  <div>
+                  <div className="space-y-2">
                     <label
                       htmlFor="claim-input"
-                      className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2"
+                      className="block text-xs font-bold uppercase tracking-wider text-[#23C9C5]"
                     >
-                      Enter Factual Claim to Investigate
+                      Enter Factual Assertion to Investigate
                     </label>
-                    <textarea
-                      id="claim-input"
-                      value={claim}
-                      onChange={(e) => setClaim(e.target.value)}
-                      placeholder="e.g. The speed of light in a vacuum is approximately 299,792 kilometers per second..."
-                      rows={4}
-                      className="w-full p-4 bg-zinc-950 border border-zinc-800 rounded-xl font-sans text-sm sm:text-base text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all resize-none"
-                      disabled={isLoading}
-                    />
-                    <div className="flex items-center justify-between text-xs text-zinc-500 mt-2 px-1">
-                      <span>Minimum 5 characters.</span>
-                      <span className="font-mono">{claim.length} / 500</span>
+
+                    <div className="relative">
+                      <textarea
+                        id="claim-input"
+                        value={claim}
+                        onChange={(e) => setClaim(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="e.g. The speed of light in a vacuum is approximately 299,792 kilometers per second..."
+                        rows={4}
+                        className="w-full p-4 bg-[#080D16] border border-zinc-800 rounded-2xl font-sans text-sm sm:text-base text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#23C9C5]/50 focus:border-[#23C9C5] transition-all resize-none shadow-inner"
+                        disabled={isLoading}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-zinc-400 px-1 pt-1">
+                      <span className="text-[11px] font-mono">
+                        Press <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono text-[10px]">Ctrl+Enter</kbd> to audit
+                      </span>
+                      <span className="font-mono text-[11px]">{claim.length} / 500</span>
                     </div>
                   </div>
 
-                  {/* Submission and Action Buttons */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                  {/* Submission & Action Bar */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-zinc-800/80">
                     <button
                       type="submit"
                       disabled={isLoading || claim.trim().length < 5}
-                      className="inline-flex items-center justify-center space-x-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-zinc-950 text-sm font-semibold rounded-xl shadow-lg shadow-emerald-500/10 transition-colors"
+                      className="inline-flex items-center justify-center space-x-2 px-6 py-3 bg-[#23C9C5] hover:bg-[#1db3af] disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-zinc-950 text-sm font-bold rounded-xl shadow-lg shadow-[#23C9C5]/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
                     >
                       <Search className="w-4 h-4" />
                       <span>Investigate Claim</span>
@@ -256,20 +282,20 @@ export default function HomePage() {
                     <button
                       type="button"
                       onClick={handleLoadArchive}
-                      className="inline-flex items-center justify-center space-x-1.5 px-4 py-2.5 bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-300 text-xs font-medium rounded-xl border border-zinc-700 transition-colors"
+                      className="inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-[#192739] hover:bg-[#22354e] text-[#23C9C5] text-xs font-semibold rounded-xl border border-[#23C9C5]/30 transition-all"
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>View Verified Run (Speed of Light)</span>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Inspect Verified Run (Speed of Light)</span>
                     </button>
                   </div>
                 </form>
 
-                {/* Example Pills */}
-                <div className="space-y-2 text-left">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 block">
-                    Example Factual Claims:
+                {/* Example Claim Pills */}
+                <div className="space-y-2.5 text-left">
+                  <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 block">
+                    Curated Investigation Benchmarks:
                   </span>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2.5">
                     {[
                       "The speed of light in a vacuum is approximately 299,792 kilometers per second.",
                       "The Great Wall of China is visible from the Moon with the naked eye.",
@@ -279,7 +305,7 @@ export default function HomePage() {
                         key={example}
                         type="button"
                         onClick={() => handleExampleSelect(example)}
-                        className="text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-900/60 hover:bg-zinc-800/80 border border-zinc-800 rounded-lg px-3 py-1.5 text-left transition-colors"
+                        className="text-xs text-zinc-300 hover:text-white bg-[#111B2A]/80 hover:bg-[#192739] border border-zinc-800/80 hover:border-[#23C9C5]/50 rounded-xl px-3.5 py-2 text-left transition-all shadow-sm"
                       >
                         &ldquo;{example}&rdquo;
                       </button>
@@ -287,33 +313,44 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Methodological Transparency Disclosures */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-zinc-400 pt-4">
-                  <div className="p-3.5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 space-y-1">
-                    <span className="font-semibold text-zinc-200 block">1. Bidirectional Search</span>
-                    <p className="text-[11px] text-zinc-500 leading-relaxed">
-                      Retriever explores both confirmation and counter-evidence queries via Tavily.
+                {/* Locked Innovations Architecture Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-zinc-400 pt-4">
+                  <div className="p-4 rounded-2xl bg-[#111B2A]/70 border border-zinc-800/80 space-y-1.5 backdrop-blur-md">
+                    <div className="flex items-center space-x-2 text-zinc-200 font-bold">
+                      <Search className="w-4 h-4 text-blue-400" />
+                      <span>Bidirectional Retrieval</span>
+                    </div>
+                    <p className="text-[11px] text-zinc-400 leading-relaxed">
+                      Retriever searches both confirmation and adversarial counter-evidence via Tavily.
                     </p>
                   </div>
-                  <div className="p-3.5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 space-y-1">
-                    <span className="font-semibold text-zinc-200 block">2. Deterministic Audit</span>
-                    <p className="text-[11px] text-zinc-500 leading-relaxed">
-                      Every quotation is validated against raw passage substrings; hallucinations are rejected.
+
+                  <div className="p-4 rounded-2xl bg-[#111B2A]/70 border border-zinc-800/80 space-y-1.5 backdrop-blur-md">
+                    <div className="flex items-center space-x-2 text-zinc-200 font-bold">
+                      <ShieldCheck className="w-4 h-4 text-[#23C9C5]" />
+                      <span>Deterministic Audit</span>
+                    </div>
+                    <p className="text-[11px] text-zinc-400 leading-relaxed">
+                      Every quotation is programmatically checked for exact substring match; hallucinations fail.
                     </p>
                   </div>
-                  <div className="p-3.5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 space-y-1">
-                    <span className="font-semibold text-zinc-200 block">3. Contradiction Detection</span>
-                    <p className="text-[11px] text-zinc-500 leading-relaxed">
-                      Nemotron analyzes evidential tensions and enforces INSUFFICIENT_EVIDENCE when appropriate.
+
+                  <div className="p-4 rounded-2xl bg-[#111B2A]/70 border border-zinc-800/80 space-y-1.5 backdrop-blur-md">
+                    <div className="flex items-center space-x-2 text-zinc-200 font-bold">
+                      <Cpu className="w-4 h-4 text-purple-400" />
+                      <span>Contradiction Engine</span>
+                    </div>
+                    <p className="text-[11px] text-zinc-400 leading-relaxed">
+                      Nemotron isolates evidential contradictions and enforces INSUFFICIENT_EVIDENCE when thin.
                     </p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Error Notifications */}
+            {/* Error Banners */}
             {clientError && (
-              <div className="max-w-3xl mx-auto p-4 bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs sm:text-sm rounded-xl flex items-start space-x-3">
+              <div className="max-w-4xl mx-auto p-4 bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs sm:text-sm rounded-2xl flex items-start space-x-3 shadow-lg">
                 <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
                 <div>
                   <strong className="block font-semibold">Validation Notice</strong>
@@ -323,14 +360,14 @@ export default function HomePage() {
             )}
 
             {apiError && (
-              <div className="max-w-3xl mx-auto p-4 bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs sm:text-sm rounded-xl flex items-start space-x-3">
+              <div className="max-w-4xl mx-auto p-5 bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs sm:text-sm rounded-2xl flex items-start space-x-3 shadow-lg">
                 <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <div className="flex items-center space-x-2">
-                    <span className="font-mono text-xs bg-amber-900/50 px-1.5 py-0.5 rounded border border-amber-700/50 text-amber-200">
+                    <span className="font-mono text-xs bg-amber-900/50 px-2 py-0.5 rounded border border-amber-700/50 text-amber-200 font-bold">
                       {apiError.code}
                     </span>
-                    <strong className="font-semibold">Investigation Error</strong>
+                    <strong className="font-bold text-sm">Investigation Halted</strong>
                   </div>
                   <p className="leading-relaxed">{apiError.message}</p>
                 </div>
@@ -339,7 +376,7 @@ export default function HomePage() {
 
             {/* In-Flight Progress Indicator */}
             {isLoading && (
-              <div className="max-w-3xl mx-auto">
+              <div className="max-w-4xl mx-auto">
                 <InvestigationProgress
                   claim={claim}
                   onCancel={handleCancelInvestigation}
@@ -356,13 +393,13 @@ export default function HomePage() {
                       setCurrentReport(null);
                       setClaim("");
                     }}
-                    className="inline-flex items-center space-x-1.5 text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800 transition-colors"
+                    className="inline-flex items-center space-x-2 text-xs font-semibold text-zinc-300 hover:text-white bg-[#111B2A] px-4 py-2 rounded-xl border border-zinc-800 hover:border-[#23C9C5]/40 transition-all shadow-sm"
                   >
                     <span>← New Investigation</span>
                   </button>
 
                   <span className="text-xs text-zinc-500 font-mono">
-                    Pipeline v{currentReport.metadata.pipelineVersion}
+                    Evidence Engine v{currentReport.metadata.pipelineVersion}
                   </span>
                 </div>
 
@@ -379,21 +416,21 @@ export default function HomePage() {
         {activeTab === "archive" && (
           <div className="space-y-6">
             {isLoading ? (
-              <div className="max-w-3xl mx-auto p-12 text-center">
+              <div className="max-w-4xl mx-auto p-16 text-center">
                 <p className="text-sm text-zinc-400">Loading verified live investigation run...</p>
               </div>
             ) : currentReport ? (
               <EvidenceReportView report={currentReport} archiveBadge={true} />
             ) : (
-              <div className="max-w-2xl mx-auto text-center p-8 bg-zinc-900/50 rounded-xl border border-zinc-800 space-y-4">
-                <Info className="w-8 h-8 text-blue-400 mx-auto" />
-                <h3 className="text-base font-semibold text-zinc-200">Verified Run Archive</h3>
-                <p className="text-xs text-zinc-400">
-                  Inspect genuine output from the Speed of Light live investigation executed on October 30, 2026.
+              <div className="max-w-2xl mx-auto text-center p-10 bg-[#111B2A]/80 rounded-3xl border border-zinc-800 space-y-4 shadow-2xl backdrop-blur-xl">
+                <Info className="w-10 h-10 text-[#23C9C5] mx-auto" />
+                <h3 className="text-lg font-bold text-zinc-100">Verified Run Archive</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed max-w-md mx-auto">
+                  Inspect authentic output from the live Speed of Light benchmark executed against real NVIDIA and Tavily endpoints.
                 </p>
                 <button
                   onClick={handleLoadArchive}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg"
+                  className="px-5 py-2.5 bg-[#23C9C5] hover:bg-[#1db3af] text-zinc-950 text-xs font-bold rounded-xl shadow-lg shadow-[#23C9C5]/10"
                 >
                   Load Verified Run
                 </button>
@@ -411,12 +448,18 @@ export default function HomePage() {
         )}
       </main>
 
-      <footer className="border-t border-zinc-900 bg-zinc-950 py-6 text-xs text-zinc-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <p>EvidenceCheck AI • Citation-audited fact verification platform</p>
-          <p className="text-[11px] text-zinc-600">
-            Powered by NVIDIA Nemotron & Tavily Search • Zero fabricated verdicts
-          </p>
+      <footer className="border-t border-zinc-900 bg-[#080D16]/90 py-8 text-xs text-zinc-500 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+          <div>
+            <span className="font-semibold text-zinc-400">EvidenceCheck AI</span>
+            <span className="mx-2">•</span>
+            <span>Citation-Audited Contradiction-Aware Fact Verification</span>
+          </div>
+          <div className="text-[11px] text-zinc-400 flex items-center space-x-3">
+            <span>Powered by NVIDIA Nemotron 120B & Tavily Search</span>
+            <span>•</span>
+            <span className="text-[#23C9C5]">Zero Hallucinated Citations</span>
+          </div>
         </div>
       </footer>
     </div>
