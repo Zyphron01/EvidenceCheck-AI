@@ -19,7 +19,26 @@ import {
 } from "lucide-react";
 
 export default function HomePage() {
-  const [claim, setClaim] = useState("");
+  const [claim, setClaim] = useState(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const prefillClaim = params.get("claim");
+      if (prefillClaim && prefillClaim.trim().length >= 5) {
+        return prefillClaim.trim().slice(0, 500);
+      }
+    }
+    return "";
+  });
+  const [extensionPrefillNotice, setExtensionPrefillNotice] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const prefillClaim = params.get("claim");
+      if (prefillClaim && prefillClaim.trim().length >= 5) {
+        return "Claim prefilled from Chrome Extension. Review assertion and click Investigate to audit.";
+      }
+    }
+    return null;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTab>("investigate");
   const [currentReport, setCurrentReport] = useState<EvidenceReport | null>(null);
@@ -29,6 +48,16 @@ export default function HomePage() {
   const [databaseConfigured, setDatabaseConfigured] = useState(false);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Clear claim parameter from browser address bar after safe initialization
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("claim")) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, []);
 
   // Check database configuration status on mount
   useEffect(() => {
@@ -224,6 +253,27 @@ export default function HomePage() {
                     EvidenceCheck AI coordinates bidirectional web retrieval via Tavily, extracts atomic passages, reasons over contradictions with Nemotron 120B, and deterministically validates quotations against retrieved text.
                   </p>
                 </div>
+
+                {/* Extension Prefill Notification */}
+                {extensionPrefillNotice && (
+                  <div
+                    data-testid="extension-prefill-banner"
+                    className="p-4 bg-[#111B2A] border border-[#23C9C5]/40 text-[#23C9C5] text-xs sm:text-sm rounded-2xl flex items-center justify-between shadow-xl"
+                  >
+                    <div className="flex items-center space-x-2.5">
+                      <Sparkles className="w-4 h-4 shrink-0 text-[#23C9C5]" />
+                      <span className="font-medium">{extensionPrefillNotice}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setExtensionPrefillNotice(null)}
+                      className="text-zinc-400 hover:text-zinc-200 text-xs px-2 py-1 rounded-lg hover:bg-zinc-800 transition-colors"
+                      aria-label="Dismiss notification"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
 
                 {/* Interactive Claim Input Capsule */}
                 <form
