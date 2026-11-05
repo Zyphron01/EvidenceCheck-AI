@@ -285,6 +285,59 @@ async function runRuntimeEndpointChecks() {
     duplicateRes.status,
     duplicateBody
   );
+  // 2.7 Test Production Credit Protection Lock (Fail-Closed default)
+  const prevNodeEnv = process.env.NODE_ENV;
+  const prevLiveEnabled = process.env.PUBLIC_LIVE_INVESTIGATION_ENABLED;
+  const prevDbUrl = process.env.DATABASE_URL;
+
+  process.env.NODE_ENV = "production";
+  process.env.PUBLIC_LIVE_INVESTIGATION_ENABLED = "false";
+  process.env.NVIDIA_API_KEY = "nvapi-test-token-placeholder";
+  process.env.NVIDIA_MODEL = "nvidia/nemotron-3.5-super-vl-120b-a12b";
+  process.env.TAVILY_API_KEY = "tvly-test-token-placeholder";
+
+  const lockedReq = new Request("http://localhost/api/investigate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-forwarded-for": "172.16.0.40" },
+    body: JSON.stringify({ claim: "Production gate test claim for credit protection." }),
+  });
+  const lockedRes = await handleInvestigateRequest(lockedReq);
+  const lockedBody = await lockedRes.json();
+  recordResult(
+    "HTTP 403 CREDIT_PROTECTION_LOCKED returned in production when PUBLIC_LIVE_INVESTIGATION_ENABLED=false",
+    lockedRes.status === 403 && lockedBody.error?.code === "CREDIT_PROTECTION_LOCKED",
+    lockedRes.status,
+    lockedBody
+  );
+
+  // 2.8 Test Production Fail-Closed when DATABASE_URL is missing
+  process.env.PUBLIC_LIVE_INVESTIGATION_ENABLED = "true";
+  delete process.env.DATABASE_URL;
+
+  const noDbReq = new Request("http://localhost/api/investigate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-forwarded-for": "172.16.0.41" },
+    body: JSON.stringify({ claim: "Production fail-closed test without DATABASE_URL." }),
+  });
+  const noDbRes = await handleInvestigateRequest(noDbReq);
+  const noDbBody = await noDbRes.json();
+  recordResult(
+    "HTTP 429 BUDGET_EXHAUSTED returned in production when DATABASE_URL is unconfigured (Fail-Closed)",
+    noDbRes.status === 429 &&
+      noDbBody.error?.code === "BUDGET_EXHAUSTED" &&
+      noDbBody.error?.message.includes("Fail-Closed"),
+    noDbRes.status,
+    noDbBody
+  );
+
+  // Restore env
+  if (prevNodeEnv !== undefined) process.env.NODE_ENV = prevNodeEnv;
+  else delete process.env.NODE_ENV;
+  if (prevLiveEnabled !== undefined) process.env.PUBLIC_LIVE_INVESTIGATION_ENABLED = prevLiveEnabled;
+  else delete process.env.PUBLIC_LIVE_INVESTIGATION_ENABLED;
+  if (prevDbUrl !== undefined) process.env.DATABASE_URL = prevDbUrl;
+  else delete process.env.DATABASE_URL;
+
   resetInFlightClaimsForTesting();
   delete process.env.NVIDIA_MODEL;
   delete process.env.TAVILY_API_KEY;

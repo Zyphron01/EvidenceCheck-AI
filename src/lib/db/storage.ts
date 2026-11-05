@@ -111,6 +111,9 @@ export async function saveReport(report: EvidenceReport): Promise<{ saved: boole
     });
 
     try {
+      // Ensure schema exists before inserting
+      await pool.query(SCHEMA_DDL);
+
       await pool.query(
         `INSERT INTO reports (id, claim_id, claim_text, verdict_status, confidence, summary, reasoning, raw_report, created_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
